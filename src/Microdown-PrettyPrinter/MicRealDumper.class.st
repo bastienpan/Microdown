@@ -139,7 +139,7 @@ MicRealDumper >> visitComment: aComment [
 	self 
 		element: aComment 
 		during: [
-			stream nextPutAll: 'textElement: '.
+			stream nextPutAll: 'text: '.
 			stream nextPutAll: '''Foo''' ]
 ]
 
@@ -156,7 +156,7 @@ MicRealDumper >> visitFigure: aMicFigure [
 			stream
 				space;
 				nextPutAll: ';'.
-			stream nextPutAll: ' caption: { '.
+			stream nextPutAll: ' captionElements: { '.
 			aMicFigure captionElements
 				do: [ :each | self visit: each ]
 				separatedBy: [ stream nextPutAll: ' . ' ].
