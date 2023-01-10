@@ -4,6 +4,7 @@ Class {
 	#instVars : [
 		'merger',
 		'styler',
+		'filter',
 		'startDirectoryName',
 		'endDirectoryName'
 	],
@@ -68,6 +69,17 @@ MicBlog >> createMergedFile [
 	self createAndExportHTMLDocument: content.
 	
 
+]
+
+{ #category : #'as yet unclassified' }
+MicBlog >> createMergedFiles: n [
+	"comment stating purpose of instance-side method"
+	"scope: class-variables  &  instance-variables"	
+			
+	| content |
+	content := merger merge: (filter lastFiles: n). 
+	self createAndExportHTMLDocument: content as: 'nLast'.
+	
 ]
 
 { #category : #accessing }
