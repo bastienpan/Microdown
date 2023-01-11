@@ -2,13 +2,13 @@ Class {
 	#name : #MicBlog,
 	#superclass : #Object,
 	#instVars : [
-		'merger',
-		'styler',
-		'filter',
-		'startDirectoryName',
-		'endDirectoryName'
+		'navBuilder',
+		'summaryBuilder',
+		'input',
+		'output',
+		'styler'
 	],
-	#category : #'Microdown-Blog'
+	#category : #'Microdown-Blog2'
 }
 
 { #category : #'as yet unclassified' }
@@ -32,8 +32,8 @@ MicBlog >> createBlog [
 	"comment stating purpose of instance-side method"
 	"scope: class-variables  &  instance-variables"	
 			
-	self createMergedFile.
-	self createFiles.
+	self createHierarchy.
+	self createSummaryFiles.
 	
 
 	
@@ -57,6 +57,11 @@ MicBlog >> createFiles [
 	| micFiles |
 	micFiles := (startDirectoryName asFileReference allChildrenMatching: '*.md')  
 	do: [ :file | self createFile: file ]
+]
+
+{ #category : #'hierarchy creation' }
+MicBlog >> createHierarchy [
+
 ]
 
 { #category : #'as yet unclassified' }
@@ -102,22 +107,23 @@ MicBlog >> createMicHTMLDocument: content as: fileName [
 
 ]
 
-{ #category : #accessing }
-MicBlog >> endDirectoryName [
-	"comment stating purpose of instance-side method"
-	"scope: class-variables  &  instance-variables"	
-			
-
-	^endDirectoryName 
+{ #category : #'as yet unclassified' }
+MicBlog >> createSummaryFile [
 ]
 
-{ #category : #accessing }
-MicBlog >> endDirectoryName: aDirectoryName [
-	"comment stating purpose of instance-side method"
-	"scope: class-variables  &  instance-variables"	
-			
+{ #category : #'as yet unclassified' }
+MicBlog >> createSummaryFile: aFileReference [
 
-	endDirectoryName := aDirectoryName  
+	| summary html|
+	summary := summaryBuilder visit: (aFileReference content).
+	html := MicHTMLDocument newWithStyle: 'awsm'.
+	html fromMicrodown: summary
+]
+
+{ #category : #'as yet unclassified' }
+MicBlog >> createSummaryFiles [
+
+	output children do: [ :each | summaryBuilder visit: (each content)].
 ]
 
 { #category : #'as yet unclassified' }
@@ -135,22 +141,43 @@ MicBlog >> initialize [
 	"scope: class-variables  &  instance-variables"	
 			
 	super initialize.
-	merger := MicFilesMerger new.
+	output := (FileLocator image path / 'output') asFileReference.
+	input := (FileLocator image path / 'input') asFileReference.
 	styler := MicHTMLStyler new.
 ]
 
 { #category : #accessing }
-MicBlog >> startDirectoryName [
+MicBlog >> inputDirectory [
 	"comment stating purpose of instance-side method"
 	"scope: class-variables  &  instance-variables"	
 			
-	^ startDirectoryName 
+
+	^input
 ]
 
 { #category : #accessing }
-MicBlog >> startDirectoryName: aDirectoryName [
+MicBlog >> inputDirectory: aDirectory [
 	"comment stating purpose of instance-side method"
 	"scope: class-variables  &  instance-variables"	
 			
-	startDirectoryName := aDirectoryName 
+
+	input := aDirectory 
+]
+
+{ #category : #accessing }
+MicBlog >> outputDirectory [
+	"comment stating purpose of instance-side method"
+	"scope: class-variables  &  instance-variables"	
+			
+
+	^output
+]
+
+{ #category : #accessing }
+MicBlog >> outputDirectory: aDirectory [
+	"comment stating purpose of instance-side method"
+	"scope: class-variables  &  instance-variables"	
+			
+
+	output := aDirectory 
 ]
