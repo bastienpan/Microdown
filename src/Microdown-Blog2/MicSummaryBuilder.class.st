@@ -26,7 +26,13 @@ MicSummaryBuilder >> entries [
 MicSummaryBuilder >> initialize [ 
 	super initialize.
 	entries := OrderedCollection new.
-	maxEntries := 5.
+	maxEntries := 3.
+]
+
+{ #category : #visiting }
+MicSummaryBuilder >> visit: aMicElement [
+	super visit: aMicElement.
+	^ MicRootBlock new children: entries
 ]
 
 { #category : #visiting }
@@ -49,8 +55,9 @@ MicSummaryBuilder >> visitHeader: aMicElement [
 { #category : #visiting }
 MicSummaryBuilder >> visitMetaData: aMicElement [
 		
-		self entries add: aMicElement.
 		maxEntries := maxEntries + 1.
+		self entries add: aMicElement.
+		
 
 
 ]

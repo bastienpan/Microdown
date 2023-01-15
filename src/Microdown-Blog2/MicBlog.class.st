@@ -6,10 +6,28 @@ Class {
 		'summaryBuilder',
 		'input',
 		'output',
-		'styler'
+		'styler',
+		'parser',
+		'htmlVisitor'
 	],
 	#category : #'Microdown-Blog2'
 }
+
+{ #category : #converting }
+MicBlog >> asHTMLMic: aMicCollection [
+			
+	htmlVisitor := MicHTMLVisitor new.
+	htmlVisitor visit: aMicCollection.
+	^htmlVisitor contents 
+	
+]
+
+{ #category : #'as yet unclassified' }
+MicBlog >> completeConfiguration: aConfiguration [
+	
+	aConfiguration charSet: (aConfiguration defaultCharset).
+	aConfiguration canvas stream configuration: aConfiguration. 
+]
 
 { #category : #'as yet unclassified' }
 MicBlog >> createAndExportHTMLDocument: content [
@@ -32,8 +50,10 @@ MicBlog >> createBlog [
 	"comment stating purpose of instance-side method"
 	"scope: class-variables  &  instance-variables"	
 			
-	self createHierarchy.
+	self createFiles.
 	self createSummaryFiles.
+	self createNav.
+	
 	
 
 	
@@ -44,47 +64,21 @@ MicBlog >> createFile: fileName [
 	"comment stating purpose of instance-side method"
 	"scope: class-variables  &  instance-variables"	
 	
-	| content |
+	| content html |
 	content := fileName asFileReference contents.
-	self createAndExportHTMLDocument: content as: fileName path base ,'.html'.
+	html := self createMicHTMLDocument: content.
+	html fileName: ((html configuration title asPath withExtension: 'html') basename ).
+	self ensureCreateDirectory: html title. 
+	self exportHTMLDocument: html.
+	
 ]
 
 { #category : #'as yet unclassified' }
 MicBlog >> createFiles [
-	"comment stating purpose of instance-side method"
-	"scope: class-variables  &  instance-variables"	
-			
-	| micFiles |
-	micFiles := (startDirectoryName asFileReference allChildrenMatching: '*.md')  
-	do: [ :file | self createFile: file ]
-]
-
-{ #category : #'hierarchy creation' }
-MicBlog >> createHierarchy [
-
-]
-
-{ #category : #'as yet unclassified' }
-MicBlog >> createMergedFile [
-	"comment stating purpose of instance-side method"
-	"scope: class-variables  &  instance-variables"	
-			
-	| content |
-	content := merger merge: startDirectoryName.
-	self createAndExportHTMLDocument: content.
+	| files |
 	
-
-]
-
-{ #category : #'as yet unclassified' }
-MicBlog >> createMergedFiles: n [
-	"comment stating purpose of instance-side method"
-	"scope: class-variables  &  instance-variables"	
-			
-	| content |
-	content := merger merge: (filter lastFiles: n). 
-	self createAndExportHTMLDocument: content as: 'nLast'.
-	
+	files := input allChildrenMatching: '*.md' .
+	files do: [ :each | self createFile: each ].
 ]
 
 { #category : #accessing }
@@ -108,22 +102,45 @@ MicBlog >> createMicHTMLDocument: content as: fileName [
 ]
 
 { #category : #'as yet unclassified' }
-MicBlog >> createSummaryFile [
+MicBlog >> createNav [
+
+	| content html |
+	
+	self halt.
+	content := self asHTMLMic: (navBuilder createNav).
+	html := self createMicHTMLDocument: content.
+	html fileName: 'Navigation.html'.
+	self exportHTMLDocumentInOutputDir: html.
 ]
 
 { #category : #'as yet unclassified' }
 MicBlog >> createSummaryFile: aFileReference [
 
-	| summary html|
-	summary := summaryBuilder visit: (aFileReference content).
-	html := MicHTMLDocument newWithStyle: 'awsm'.
-	html fromMicrodown: summary
+	| summary html htmlString|
+	summary := summaryBuilder visit: (parser parse:(aFileReference contents)).
+	htmlString := self asHTMLMic: summary.
+	html := self initializeHTML: (htmlVisitor configuration).
+	html writeDocument: htmlString.
+	html fileName: (html configuration title , ' Summary.html').
+	self exportHTMLDocument: html.
 ]
 
 { #category : #'as yet unclassified' }
 MicBlog >> createSummaryFiles [
 
-	output children do: [ :each | summaryBuilder visit: (each content)].
+	| files |
+	
+	files := input allChildrenMatching: '*.md' .
+	files do: [ :each | self createSummaryFile: each ].
+]
+
+{ #category : #'hierarchy creation' }
+MicBlog >> ensureCreateDirectory: directoryName [
+
+
+
+	(output path / directoryName) asFileReference ensureCreateDirectory.
+	
 ]
 
 { #category : #'as yet unclassified' }
@@ -131,7 +148,16 @@ MicBlog >> exportHTMLDocument: aMicHTMLDocument [
 	"comment stating purpose of instance-side method"
 	"scope: class-variables  &  instance-variables"	
 	
-	aMicHTMLDocument destinationPath: (self endDirectoryName). 
+	aMicHTMLDocument destinationPath: (self outputDirectory / aMicHTMLDocument title). 
+	aMicHTMLDocument writeToFile 
+]
+
+{ #category : #'as yet unclassified' }
+MicBlog >> exportHTMLDocumentInOutputDir: aMicHTMLDocument [
+	"comment stating purpose of instance-side method"
+	"scope: class-variables  &  instance-variables"	
+	
+	aMicHTMLDocument destinationPath: (self outputDirectory). 
 	aMicHTMLDocument writeToFile 
 ]
 
@@ -144,6 +170,34 @@ MicBlog >> initialize [
 	output := (FileLocator image path / 'output') asFileReference.
 	input := (FileLocator image path / 'input') asFileReference.
 	styler := MicHTMLStyler new.
+	summaryBuilder := MicSummaryBuilder new.
+	navBuilder := MicNavBuilder new.
+	parser := MicrodownParser new.
+]
+
+{ #category : #initialization }
+MicBlog >> initializeHTML: configuration [
+	
+	| html |
+	html := MicHTMLDocument new. 
+	html configuration: configuration.
+	html configuration document: html.
+	self completeConfiguration: (html configuration).
+	
+	^html
+]
+
+{ #category : #initialization }
+MicBlog >> initializeHTML: configuration as: fileName [
+	
+	| html |
+	html := MicHTMLDocument new. 
+	html configuration: configuration.
+	html configuration document: html.
+	self completeConfiguration: (html configuration).
+	html fileName: ((fileName asPath withExtension: 'html') basename ).
+	
+	^html
 ]
 
 { #category : #accessing }
