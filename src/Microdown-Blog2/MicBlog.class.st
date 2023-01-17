@@ -106,7 +106,6 @@ MicBlog >> createNav [
 
 	| content html |
 	
-	self halt.
 	content := self asHTMLMic: (navBuilder createNav).
 	html := self createMicHTMLDocument: content.
 	html fileName: 'Navigation.html'.

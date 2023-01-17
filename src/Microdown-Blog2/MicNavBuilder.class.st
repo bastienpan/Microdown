@@ -22,16 +22,28 @@ MicNavBuilder >> createNav [
 { #category : #'as yet unclassified' }
 MicNavBuilder >> hyperlink: fileName [
 
-	| html title text|
+	| html title link path collection|
 	
 	html := MicHTMLDocument new fromMicrodown: fileName contents.
 	html title 
 	ifEmpty: [ title := fileName ]  ifNotEmpty: [ title := html title ].
+	path := output path / title withExtension: 'html'.
+	"link := String streamContents: [ :s |
+		s 
+			nextPutAll: '[';
+			nextPutAll: title;
+			nextPutAll: '](';
+		 	nextPutAll: path pathString;
+			nextPutAll: ')'].
+		self halt."
+	link := MicLinkBlock new.
+	link substring: title;
+	url: path pathString;
+	reference: (MicHTTPResourceReference new uri: path pathString) .
+	collection := OrderedCollection new.
+	collection add: link.
 	self halt.
-	text := Text fromString:title.
-	^MicListItemBlock new children: (OrderedCollection new add: text).
-	
-	
+	^MicListItemBlock new children: collection.
 ]
 
 { #category : #initialization }
