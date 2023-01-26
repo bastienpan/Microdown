@@ -27,7 +27,8 @@ MicNavBuilder >> hyperlink: fileName [
 	html := MicHTMLDocument new fromMicrodown: fileName contents.
 	html title 
 	ifEmpty: [ title := fileName ]  ifNotEmpty: [ title := html title ].
-	path := output path / title withExtension: 'html'.
+	path := output path parent / title  / title withExtension: 'html'.
+	"self halt."
 	"link := String streamContents: [ :s |
 		s 
 			nextPutAll: '[';
@@ -38,11 +39,13 @@ MicNavBuilder >> hyperlink: fileName [
 		self halt."
 	link := MicLinkBlock new.
 	link substring: title;
-	url: path pathString;
-	reference: (MicHTTPResourceReference new uri: path pathString) .
+	url: (path pathString unescapeCharacter: $') ;
+	captionElements: OrderedCollection new.
+	link captionElements add: link.
+	link reference: (MicHTTPResourceReference new uri:  path asFileReference asAbsolute path  ) .
+	"self halt."
 	collection := OrderedCollection new.
 	collection add: link.
-	self halt.
 	^MicListItemBlock new children: collection.
 ]
 

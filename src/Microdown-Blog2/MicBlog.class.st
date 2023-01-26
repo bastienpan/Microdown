@@ -178,7 +178,8 @@ MicBlog >> initialize [
 MicBlog >> initializeHTML: configuration [
 	
 	| html |
-	html := MicHTMLDocument new. 
+	"html := MicHTMLDocument newWithStyle: 'AwsmCSS'. "
+	html := MicHTMLDocument new.
 	html configuration: configuration.
 	html configuration document: html.
 	self completeConfiguration: (html configuration).
@@ -190,7 +191,7 @@ MicBlog >> initializeHTML: configuration [
 MicBlog >> initializeHTML: configuration as: fileName [
 	
 	| html |
-	html := MicHTMLDocument new. 
+	html := MicHTMLDocument new.
 	html configuration: configuration.
 	html configuration document: html.
 	self completeConfiguration: (html configuration).
